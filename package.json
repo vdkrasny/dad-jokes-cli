@@ -1,0 +1,27 @@
+{
+  "name": "node-terminal-tool",
+  "version": "1.0.0",
+  "description": "A simple command line tool which allows the user to make a request to an API and store the data in a file.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js",
+    "searchTearm": "node app.js --searchTearm 'hipster'",
+    "leaderboard": "node app.js --leaderboard"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vdkrasny/node-terminal-tool.git"
+  },
+  "author": "Vlad Krasny",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vdkrasny/node-terminal-tool/issues"
+  },
+  "homepage": "https://github.com/vdkrasny/node-terminal-tool#readme",
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.17.3"
+  }
+}
