@@ -1,72 +1,83 @@
 const fs = require('fs');
 const path = require('path');
 
-const FILE_PATH = path.join(__dirname, '..', 'jokes.json');
-
 class DataBaseClient {
-    add(key, item) {
-        this.read()
-            .then((parsedData) => {
-                if (parsedData[key] === undefined) {
-                    parsedData[key] = [];
-                }
+    constructor(fileName) {
+        this.filePath = path.join(__dirname, '..', `${fileName}.json`);
 
-                parsedData[key].push(item);
-
-                this.write(parsedData)
-                    .then(() => console.log(item.joke))
-                    .catch(err => console.log(`DBClient.write Error: ${err}`));
-            })
-            .catch(err => console.log(`DBClient.read Error: ${err}`));
+        fs.open(this.filePath, 'wx', (err, fd) => {
+            if (!err) {
+                fs.close(fd, (e) => {
+                    if (e) {
+                        console.error(`Close file Error: ${e}`);
+                    }
+                });
+            }
+        });
     }
 
-    findMostСommon(key) {
-        this.read()
+    add(data) {
+        return this.read()
             .then((parsedData) => {
-                if (parsedData[key] !== undefined && parsedData[key].length !== 0) {
-                    // countedJokesId = { [id]: [number of times the id was found], ... }
-                    const countedJokesId = parsedData[key].reduce((result, current) => {
-                        if (!result[current.id]) {
-                            result[current.id] = 0;
-                        }
-                        result[current.id] += 1;
+                if (parsedData instanceof Array) {
+                    parsedData.push(data);
 
-                        return result;
-                    }, {});
-
-                    // sorted in descending order and got the first id
-                    const mostСommonJokeId = Object.keys(countedJokesId)
-                        .sort((a, b) => countedJokesId[b] - countedJokesId[a])[0];
-
-                    const leaderJoke = parsedData[key].find(item => item.id === mostСommonJokeId).joke;
-
-                    console.log(leaderJoke);
-                } else {
-                    console.log('There is no data to show.');
+                    return this.write(parsedData);
                 }
+                throw new Error(`No data was saved. Please, check the ${this.filePath} file structure. It must be an array.`);
             })
-            .catch(err => console.log(`DBClient.findMostСommon Error: ${err}`));
+            .then(() => data)
+            .catch(({ message }) => console.log(`Error: ${message}`));
+    }
+
+    findMostСommon() {
+        return this.read()
+            .then((parsedData) => {
+                if (parsedData.length === 0) {
+                    throw new Error('There is no data to show.');
+                }
+
+                // countedId = { [id]: [number of times the id was found], ... }
+                const countedId = parsedData.reduce((result, current) => {
+                    if (!result[current.id]) {
+                        result[current.id] = 0;
+                    }
+                    result[current.id] += 1;
+
+                    return result;
+                }, {});
+
+                // sorted in descending order and got the first id
+                const mostСommonId = Object.keys(countedId)
+                    .sort((a, b) => countedId[b] - countedId[a])[0];
+
+                return parsedData.find(item => item.id === mostСommonId);
+            });
     }
 
     read() {
-        return new Promise((res, rej) => {
-            fs.readFile(FILE_PATH, (readErr, data) => {
-                if (readErr) {
-                    rej(readErr);
+        return new Promise((resolve, reject) => {
+            fs.readFile(this.filePath, (err, data) => {
+                if (err) {
+                    reject(err);
                 } else {
-                    res(JSON.parse(data));
+                    try {
+                        resolve(JSON.parse(data));
+                    } catch (e) {
+                        resolve([]);
+                    }
                 }
             });
         });
     }
 
     write(data) {
-        return new Promise((res, rej) => {
-            fs.writeFile(FILE_PATH, JSON.stringify(data), (writeErr) => {
-                if (writeErr) {
-                    rej(writeErr);
+        return new Promise((resolve, reject) => {
+            fs.writeFile(this.filePath, JSON.stringify(data), (err) => {
+                if (err) {
+                    reject(err);
                 } else {
-                    res();
+                    resolve();
                 }
             });
         });

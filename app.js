@@ -1,32 +1,32 @@
-const DBC = require('./src/DataBaseClient');
+const DataBaseClient = require('./src/DataBaseClient');
 const getJoke = require('./src/getJoke');
+const mergeJokePages = require('./src/mergeJokePages');
 
 const { getRandomInt } = require('./utils');
 
-const dbClient = new DBC();
-const args = process.argv.slice(2);
+const JokesDBClient = new DataBaseClient('jokes');
+const [lineArg, lineArgValue] = process.argv.slice(2);
 
-if (args[0] === '--searchTearm') {
-    getJoke({ term: args[1] })
-        .then(({ results }) => {
-            const resultsLength = results.length;
+switch (lineArg) {
+    case '--searchTearm':
+        mergeJokePages({ term: lineArgValue })
+            .then((results) => {
+                const randomIdx = getRandomInt(0, results.length);
 
-            if (resultsLength !== 0) {
-                const randomIdx = getRandomInt(0, resultsLength);
-
-                dbClient.add('jokes', {
-                    id: results[randomIdx].id,
-                    joke: results[randomIdx].joke
-                });
-            } else {
-                console.log('No jokes were found for that search term.');
-            }
-        })
-        .catch(err => console.log(`[app.js] Error: ${err}`));
-} else if (args[0] === '--leaderboard') {
-    dbClient.findMostСommon('jokes');
-} else {
-    getJoke()
-        .then(({ id, joke }) => dbClient.add('jokes', { id, joke }))
-        .catch(err => console.log(`[app.js] Error: ${err}`));
+                return JokesDBClient.add({ id: results[randomIdx].id, joke: results[randomIdx].joke });
+            })
+            .then(({ joke }) => console.log(joke))
+            .catch(({ message }) => console.log(`Error: ${message}`));
+        break;
+    case '--leaderboard':
+        JokesDBClient.findMostСommon()
+            .then(({ joke }) => console.log(joke))
+            .catch(({ message }) => console.log(`Error: ${message}`));
+        break;
+    default:
+        getJoke()
+            .then(({ id, joke }) => JokesDBClient.add({ id, joke }))
+            .then(({ joke }) => console.log(joke))
+            .catch(({ message }) => console.log(`Error: ${message}`));
+        break;
 }
