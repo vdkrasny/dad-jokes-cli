@@ -1,10 +1,31 @@
+const https = require('https');
+
 const DataBaseClient = require('../db/DataBaseClient');
-const httpsRequestTo = require('../src/httpsRequestTo');
 
 const { getRandomInt } = require('../utils');
 
 const fileName = 'jokes';
 const jokesDBClient = new DataBaseClient(fileName);
+
+function apiRequest(url) {
+    const options = {
+        headers: { 'Accept': 'application/json' },
+        method: 'GET'
+    };
+
+    return new Promise((resolve, reject) => {
+        https
+            .request(url, options, (response) => {
+                const body = [];
+
+                response.on('data', chunk => body.push(chunk));
+                response.on('end', () => resolve(Buffer.concat(body)
+                    .toString()));
+            })
+            .on('error', err => reject(err.message))
+            .end();
+    });
+}
 
 async function getJokes(searchParams = {}) {
     const apiUrl = new URL('https://icanhazdadjoke.com');
@@ -17,7 +38,7 @@ async function getJokes(searchParams = {}) {
         searchParamsKeys.forEach(key => apiUrl.searchParams.set(key, searchParams[key]));
     }
 
-    const firstPageRawData = await httpsRequestTo(apiUrl);
+    const firstPageRawData = await apiRequest(apiUrl);
     const {
         current_page: currentPage,
         next_page: nextPage,
@@ -25,13 +46,13 @@ async function getJokes(searchParams = {}) {
         results: firstPageJokes
     } = JSON.parse(firstPageRawData);
 
-    if (currentPage < nextPage && nextPage <= totalPages) {
+    if (currentPage < totalPages) {
         const pagesRequests = [];
 
         for (let i = nextPage; i <= totalPages; i += 1) {
             apiUrl.searchParams.set('page', i);
 
-            pagesRequests.push(httpsRequestTo(apiUrl));
+            pagesRequests.push(apiRequest(apiUrl));
         }
 
         const pagesRawData = await Promise.all(pagesRequests);
