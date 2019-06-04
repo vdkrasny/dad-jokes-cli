@@ -4,16 +4,6 @@ const path = require('path');
 class DataBaseClient {
     constructor(fileName) {
         this.filePath = path.join(__dirname, `${fileName}.json`);
-
-        fs.open(this.filePath, 'wx', (err, fd) => {
-            if (!err) {
-                fs.close(fd, (e) => {
-                    if (e) {
-                        console.error(`Close file Error: ${e}`);
-                    }
-                });
-            }
-        });
     }
 
     add(data) {
@@ -32,17 +22,21 @@ class DataBaseClient {
 
     read() {
         return new Promise((resolve, reject) => {
-            fs.readFile(this.filePath, (err, data) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    try {
-                        resolve(JSON.parse(data));
-                    } catch (e) {
-                        resolve([]);
-                    }
-                }
-            });
+            this.checkFileExist()
+                .then(() => {
+                    fs.readFile(this.filePath, (err, data) => {
+                        if (err) {
+                            reject(err);
+                        }
+
+                        try {
+                            resolve(JSON.parse(data));
+                        } catch (e) {
+                            resolve([]);
+                        }
+                    });
+                })
+                .catch(err => reject(err));
         });
     }
 
@@ -51,8 +45,23 @@ class DataBaseClient {
             fs.writeFile(this.filePath, JSON.stringify(data), (err) => {
                 if (err) {
                     reject(err);
-                } else {
+                }
+
+                resolve();
+            });
+        });
+    }
+
+    checkFileExist() {
+        return new Promise((resolve, reject) => {
+            fs.stat(this.filePath, (err) => {
+                if (err === null) {
                     resolve();
+                } else if (err.code === 'ENOENT') {
+                    this.write([])
+                        .then(() => resolve());
+                } else {
+                    reject(err);
                 }
             });
         });
