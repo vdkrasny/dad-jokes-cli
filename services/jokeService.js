@@ -77,15 +77,11 @@ module.exports.getJokeByTerm = async function (term) {
         const randomIdx = getRandomInt(0, jokes.length);
         const { id, joke } = jokes[randomIdx];
 
-        try {
-            await jokesDBClient.add({ id, joke });
+        await jokesDBClient.add({ id, joke });
 
-            console.log(joke);
-        } catch (err) {
-            console.log(`Error: ${err.message}`);
-        }
+        return joke;
     } catch (err) {
-        console.log(`Error: ${err.message}`);
+        return err;
     }
 };
 
@@ -94,8 +90,8 @@ module.exports.getMostCommonJoke = async function () {
         const jokes = await jokesDBClient.read();
         const { joke } = findMostCommonJoke(jokes);
 
-        console.log(joke);
+        return joke;
     } catch (err) {
-        console.log(`Error: ${err.message}`);
+        return err;
     }
 };

@@ -1,4 +1,4 @@
-const { getJokeByTerm, getMostCommonJoke } = require('./services/jokeService');
+const jokeService = require('./services/jokeService');
 
 const [lineArg, lineArgValue] = process.argv.slice(2);
 
@@ -15,14 +15,31 @@ where <command> is one of:
 
 (async function () {
     switch (lineArg) {
-        case CLI_FLAG_SEARCH_TEARM:
-            await getJokeByTerm(lineArgValue);
+        case CLI_FLAG_SEARCH_TEARM: {
+            try {
+                const joke = await jokeService.getJokeByTerm(lineArgValue);
+
+                console.log(joke);
+            } catch (err) {
+                console.log(`Error: ${err.message}`);
+            }
+
             break;
-        case CLI_FLAG_LEADERBOARD:
-            await getMostCommonJoke();
+        }
+        case CLI_FLAG_LEADERBOARD: {
+            try {
+                const joke = await jokeService.getMostCommonJoke();
+
+                console.log(joke);
+            } catch (err) {
+                console.log(`Error: ${err.message}`);
+            }
+
             break;
-        default:
+        }
+        default: {
             console.log(usageGuide);
             break;
+        }
     }
 }());
