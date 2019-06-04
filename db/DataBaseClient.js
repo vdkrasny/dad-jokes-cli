@@ -6,37 +6,45 @@ class DataBaseClient {
         this.filePath = path.join(__dirname, `${fileName}.json`);
     }
 
-    add(data) {
-        return this.read()
-            .then((parsedData) => {
-                if (!(parsedData instanceof Array)) {
-                    throw new Error(`No data was saved. Please, check the ${this.filePath} file structure. It must be an array.`);
-                }
+    async add(data) {
+        try {
+            const parsedData = await this.read();
 
-                parsedData.push(data);
+            if (!(parsedData instanceof Array)) {
+                throw new Error(`No data was saved. Please, check the ${this.filePath} file structure. It must be an array.`);
+            }
 
-                return this.write(parsedData);
-            })
-            .catch(({ message }) => console.log(`Error: ${message}`));
+            parsedData.push(data);
+
+            return this.write(parsedData);
+        } catch (err) {
+            return console.log(`Error: ${err.message}`);
+        }
     }
 
     read() {
-        return new Promise((resolve, reject) => {
-            this.checkFileExist()
-                .then(() => {
-                    fs.readFile(this.filePath, (err, data) => {
-                        if (err) {
-                            reject(err);
-                        }
+        return new Promise(async (resolve, reject) => {
+            try {
+                const isExist = await this.checkFileExist();
 
-                        try {
-                            resolve(JSON.parse(data));
-                        } catch (e) {
-                            resolve([]);
-                        }
-                    });
-                })
-                .catch(err => reject(err));
+                if (!isExist) {
+                    await this.write([]);
+                }
+
+                fs.readFile(this.filePath, (err, data) => {
+                    if (err) {
+                        reject(err);
+                    }
+
+                    try {
+                        resolve(JSON.parse(data));
+                    } catch (e) {
+                        reject(new Error(`No data was read. Please, check the ${this.filePath} file. It must have a valid JSON structure.`));
+                    }
+                });
+            } catch (err) {
+                reject(err);
+            }
         });
     }
 
@@ -56,10 +64,9 @@ class DataBaseClient {
         return new Promise((resolve, reject) => {
             fs.stat(this.filePath, (err) => {
                 if (err === null) {
-                    resolve();
+                    resolve(true);
                 } else if (err.code === 'ENOENT') {
-                    this.write([])
-                        .then(() => resolve());
+                    resolve(false);
                 } else {
                     reject(err);
                 }
