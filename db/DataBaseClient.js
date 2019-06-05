@@ -24,27 +24,23 @@ class DataBaseClient {
 
     read() {
         return new Promise(async (resolve, reject) => {
-            try {
-                const isExist = await this.checkFileExist();
+            const isExist = await this.checkFileExist();
 
-                if (!isExist) {
-                    await this.write([]);
+            if (!isExist) {
+                await this.write([]);
+            }
+
+            fs.readFile(this.filePath, (err, data) => {
+                if (err) {
+                    reject(err);
                 }
 
-                fs.readFile(this.filePath, (err, data) => {
-                    if (err) {
-                        reject(err);
-                    }
-
-                    try {
-                        resolve(JSON.parse(data));
-                    } catch (e) {
-                        reject(new Error(`No data was read. Please, check the ${this.filePath} file. It must have a valid JSON structure.`));
-                    }
-                });
-            } catch (err) {
-                reject(err);
-            }
+                try {
+                    resolve(JSON.parse(data));
+                } catch (e) {
+                    reject(new Error(`No data was read. Please, check the ${this.filePath} file. It must have a valid JSON structure.`));
+                }
+            });
         });
     }
 
@@ -55,7 +51,7 @@ class DataBaseClient {
                     reject(err);
                 }
 
-                resolve();
+                return resolve();
             });
         });
     }
