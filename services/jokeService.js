@@ -72,7 +72,6 @@ function findMostCommonJoke(jokes) {
 }
 
 module.exports.getJokeByTerm = async function (term) {
-    try {
     const jokes = await getJokes({ term });
     const randomIdx = getRandomInt(0, jokes.length);
     const { id, joke } = jokes[randomIdx];
@@ -80,18 +79,11 @@ module.exports.getJokeByTerm = async function (term) {
     await jokesDBClient.add({ id, joke });
 
     return joke;
-    } catch (err) {
-        return err;
-    }
 };
 
 module.exports.getMostCommonJoke = async function () {
-    try {
     const jokes = await jokesDBClient.read();
     const { joke } = findMostCommonJoke(jokes);
 
     return joke;
-    } catch (err) {
-        return err;
-    }
 };
