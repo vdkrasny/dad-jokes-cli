@@ -1,31 +1,10 @@
-const https = require('https');
-
 const DataBaseClient = require('../db/DataBaseClient');
+const apiRequest = require('../src/apiRequest');
 
 const { getRandomInt } = require('../utils');
 
 const fileName = 'jokes';
 const jokesDBClient = new DataBaseClient(fileName);
-
-function apiRequest(url) {
-    const options = {
-        headers: { 'Accept': 'application/json' },
-        method: 'GET'
-    };
-
-    return new Promise((resolve, reject) => {
-        https
-            .request(url, options, (response) => {
-                const body = [];
-
-                response.on('data', chunk => body.push(chunk));
-                response.on('end', () => resolve(Buffer.concat(body)
-                    .toString()));
-            })
-            .on('error', err => reject(err.message))
-            .end();
-    });
-}
 
 async function getJokes(searchParams = {}) {
     const apiUrl = new URL('https://icanhazdadjoke.com');
@@ -94,13 +73,13 @@ function findMostCommonJoke(jokes) {
 
 module.exports.getJokeByTerm = async function (term) {
     try {
-        const jokes = await getJokes({ term });
-        const randomIdx = getRandomInt(0, jokes.length);
-        const { id, joke } = jokes[randomIdx];
+    const jokes = await getJokes({ term });
+    const randomIdx = getRandomInt(0, jokes.length);
+    const { id, joke } = jokes[randomIdx];
 
-        await jokesDBClient.add({ id, joke });
+    await jokesDBClient.add({ id, joke });
 
-        return joke;
+    return joke;
     } catch (err) {
         return err;
     }
@@ -108,10 +87,10 @@ module.exports.getJokeByTerm = async function (term) {
 
 module.exports.getMostCommonJoke = async function () {
     try {
-        const jokes = await jokesDBClient.read();
-        const { joke } = findMostCommonJoke(jokes);
+    const jokes = await jokesDBClient.read();
+    const { joke } = findMostCommonJoke(jokes);
 
-        return joke;
+    return joke;
     } catch (err) {
         return err;
     }
