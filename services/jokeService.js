@@ -17,13 +17,13 @@ async function getJokes(searchParams = {}) {
         searchParamsKeys.forEach(key => apiUrl.searchParams.set(key, searchParams[key]));
     }
 
-    const firstPageRawData = await apiRequest(apiUrl);
+    const currentPageRawData = await apiRequest(apiUrl);
     const {
         current_page: currentPage,
         next_page: nextPage,
         total_pages: totalPages,
-        results: firstPageJokes
-    } = JSON.parse(firstPageRawData);
+        results: currentPageJokes
+    } = JSON.parse(currentPageRawData);
 
     if (currentPage < totalPages) {
         const pagesRequests = [];
@@ -34,12 +34,12 @@ async function getJokes(searchParams = {}) {
             pagesRequests.push(apiRequest(apiUrl));
         }
 
-        const pagesRawData = await Promise.all(pagesRequests);
-        const pagesData = pagesRawData.map(data => JSON.parse(data));
+        const nextPagesRawData = await Promise.all(pagesRequests);
+        const nextPagesData = nextPagesRawData.map(data => JSON.parse(data));
 
-        jokes = pagesData.reduce((mergedJokes, { results: pageJokes }) => mergedJokes.concat(pageJokes), firstPageJokes);
+        jokes = nextPagesData.reduce((mergedJokes, { results: pageJokes }) => mergedJokes.concat(pageJokes), currentPageJokes);
     } else {
-        jokes = firstPageJokes;
+        jokes = currentPageJokes;
     }
 
     if (!jokes.length) {
