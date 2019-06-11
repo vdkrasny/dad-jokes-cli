@@ -1,5 +1,5 @@
 {
-  "name": "node-terminal-tool",
+  "name": "dad-jokes-cli",
   "version": "1.0.0",
   "description": "A simple command line tool which allows the user to make a request to an API and store the data in a file.",
   "main": "app.js",
@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vdkrasny/node-terminal-tool.git"
+    "url": "git+https://github.com/vdkrasny/dad-jokes-cli.git"
   },
   "author": "Vlad Krasny",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/vdkrasny/node-terminal-tool/issues"
+    "url": "https://github.com/vdkrasny/dad-jokes-cli/issues"
   },
-  "homepage": "https://github.com/vdkrasny/node-terminal-tool#readme",
+  "homepage": "https://github.com/vdkrasny/dad-jokes-cli#readme",
   "devDependencies": {
     "eslint": "^5.16.0",
     "eslint-config-airbnb-base": "^13.1.0",
